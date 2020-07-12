@@ -6,7 +6,7 @@ app.use(express.json());
 const database = {
   users: [
     {
-      id: "1",
+      id: "123",
       name: "John",
       email: "john@email.com",
       password: "cookies",
@@ -14,7 +14,7 @@ const database = {
       joined: new Date(),
     },
     {
-      id: "2",
+      id: "124",
       name: "Sally",
       email: "sally@email.com",
       password: "apple",
@@ -52,6 +52,22 @@ app.post("/register", (req, res) => {
   });
 
   res.json(database.users[database.users.length - 1]);
+});
+
+app.get("/profile/:id", (req, res) => {
+  const { id } = req.params;
+  let found = false;
+
+  database.users.forEach(user => {
+    if (user.id === id) {
+      found = true;
+      return res.json(user);
+    }
+  });
+
+  if (!found) {
+    res.status(400).json("User not found");
+  }
 });
 
 app.listen(3000, () => {
