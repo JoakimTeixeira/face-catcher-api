@@ -25,7 +25,7 @@ const database = {
 };
 
 app.get("/", (req, res) => {
-  res.send("This is working");
+  res.send(database.users);
 });
 
 app.post("/signin", (req, res) => {
@@ -37,6 +37,21 @@ app.post("/signin", (req, res) => {
   } else {
     res.status("404").json("Error logging in");
   }
+});
+
+app.post("/register", (req, res) => {
+  const { email, name, password } = req.body;
+
+  database.users.push({
+    id: "3",
+    name,
+    email,
+    password,
+    entries: 0,
+    joined: new Date(),
+  });
+
+  res.json(database.users[database.users.length - 1]);
 });
 
 app.listen(3000, () => {
