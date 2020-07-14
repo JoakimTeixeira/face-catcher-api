@@ -26,23 +26,23 @@ const database = {
   ],
 };
 
-app.get("/", (req, res) => {
-  res.send(database.users);
+app.get("/", (request, response) => {
+  response.send(database.users);
 });
 
-app.post("/signin", (req, res) => {
+app.post("/signin", (request, response) => {
   if (
-    req.body.email === database.users[0].email &&
-    req.body.password === database.users[0].password
+    request.body.email === database.users[0].email &&
+    request.body.password === database.users[0].password
   ) {
-    res.json("Success");
+    response.json("success");
   } else {
-    res.status("404").json("Error logging in");
+    response.status("404").json("Error logging in");
   }
 });
 
-app.post("/register", (req, res) => {
-  const { email, name, password } = req.body;
+app.post("/register", (request, response) => {
+  const { email, name, password } = request.body;
 
   database.users.push({
     id: "3",
@@ -53,27 +53,27 @@ app.post("/register", (req, res) => {
     joined: new Date(),
   });
 
-  res.json(database.users[database.users.length - 1]);
+  response.json(database.users[database.users.length - 1]);
 });
 
-app.get("/profile/:id", (req, res) => {
-  const { id } = req.params;
+app.get("/profile/:id", (request, response) => {
+  const { id } = request.params;
   let found = false;
 
   database.users.forEach(user => {
     if (user.id === id) {
       found = true;
-      return res.json(user);
+      return response.json(user);
     }
   });
 
   if (!found) {
-    res.status(400).json("User not found");
+    response.status(400).json("User not found");
   }
 });
 
-app.put("/image", (req, res) => {
-  const { id } = req.body;
+app.put("/image", (request, response) => {
+  const { id } = request.body;
   let found = false;
 
   database.users.forEach(user => {
@@ -81,12 +81,12 @@ app.put("/image", (req, res) => {
       found = true;
       user.entries++;
 
-      return res.json(user.entries);
+      return response.json(user.entries);
     }
   });
 
   if (!found) {
-    res.status(400).json("User not found");
+    response.status(400).json("User not found");
   }
 });
 
