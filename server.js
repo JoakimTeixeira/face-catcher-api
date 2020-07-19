@@ -8,7 +8,7 @@ app.use(cors());
 const database = {
   users: [
     {
-      id: "123",
+      id: 123,
       name: "John",
       email: "john@email.com",
       password: "cookies",
@@ -16,7 +16,7 @@ const database = {
       joined: new Date(),
     },
     {
-      id: "124",
+      id: 124,
       name: "Sally",
       email: "sally@email.com",
       password: "apple",
@@ -35,24 +35,24 @@ app.post("/signin", (request, response) => {
     request.body.email === database.users[0].email &&
     request.body.password === database.users[0].password
   ) {
-    response.json("success");
+    response.json(database.users[0]);
   } else {
     response.status("404").json("Error logging in");
   }
 });
 
 app.post("/register", (request, response) => {
-  const { email, name, password } = request.body;
+  const { name, email, password } = request.body;
 
   database.users.push({
-    id: "3",
+    id: Math.floor(Math.random() * 1000 + 1),
     name,
     email,
     password,
     entries: 0,
     joined: new Date(),
   });
-
+  // returns the last registered user
   response.json(database.users[database.users.length - 1]);
 });
 
