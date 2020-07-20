@@ -12,6 +12,7 @@ const db = knex({
   },
 });
 
+// database test
 db.select("*")
   .from("users")
   .then(data => {
@@ -79,18 +80,17 @@ app.post("/register", (request, response) => {
 
 app.get("/profile/:id", (request, response) => {
   const { id } = request.params;
-  let found = false;
 
-  database.users.forEach(user => {
-    if (user.id === id) {
-      found = true;
-      return response.json(user);
-    }
-  });
-
-  if (!found) {
-    response.status(400).json("User not found");
-  }
+  db.select("*")
+    .from("users")
+    .where({ id })
+    .then(user => {
+      if (user.length) {
+        response.json(user[0]);
+      } else {
+        response.status(400).json("User not found");
+      }
+    });
 });
 
 app.put("/image", (request, response) => {
