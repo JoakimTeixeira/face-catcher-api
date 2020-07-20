@@ -1,5 +1,22 @@
 import express from "express";
 import cors from "cors";
+import knex from "knex";
+
+const db = knex({
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    user: "joka",
+    password: "root",
+    database: "face-catcher",
+  },
+});
+
+db.select("*")
+  .from("users")
+  .then(data => {
+    console.log(data);
+  });
 
 const app = express();
 app.use(express.json());
@@ -42,18 +59,22 @@ app.post("/signin", (request, response) => {
 });
 
 app.post("/register", (request, response) => {
-  const { name, email, password } = request.body;
+  const { name, email } = request.body;
 
-  database.users.push({
-    id: `${Math.floor(Math.random() * 1000 + 1)}`,
-    name,
-    email,
-    password,
-    entries: 0,
-    joined: new Date(),
-  });
-  // returns the last registered user
-  response.json(database.users[database.users.length - 1]);
+  db("users")
+    .returning("*")
+    .insert({
+      email,
+      name,
+      joined: new Date(),
+    })
+    .then(user => {
+      // returns the last registered user
+      response.json(user[0]);
+    })
+    .catch(err =>
+      response.status(400).json(`Unable to register. ${err.detail}`)
+    );
 });
 
 app.get("/profile/:id", (request, response) => {
