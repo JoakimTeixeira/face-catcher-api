@@ -8,7 +8,7 @@ app.use(cors());
 const database = {
   users: [
     {
-      id: 123,
+      id: "123",
       name: "John",
       email: "john@email.com",
       password: "cookies",
@@ -16,7 +16,7 @@ const database = {
       joined: new Date(),
     },
     {
-      id: 124,
+      id: "124",
       name: "Sally",
       email: "sally@email.com",
       password: "apple",
@@ -45,7 +45,7 @@ app.post("/register", (request, response) => {
   const { name, email, password } = request.body;
 
   database.users.push({
-    id: Math.floor(Math.random() * 1000 + 1),
+    id: `${Math.floor(Math.random() * 1000 + 1)}`,
     name,
     email,
     password,
