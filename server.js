@@ -67,7 +67,11 @@ app.post("/signin", (request, response) => {
           .then(user => {
             response.json(user[0]);
           })
-          .catch(err => response.status(400).json("Database not found"));
+          .catch(err =>
+            response
+              .status(400)
+              .json("Unable to get user signin data. Database not found")
+          );
       }
     })
     .catch(err => response.status(400).json("Wrong credentials"));
@@ -117,7 +121,12 @@ app.get("/profile/:id", (request, response) => {
       } else {
         response.status(400).json("User not found");
       }
-    });
+    })
+    .catch(err =>
+      response
+        .status(400)
+        .json("Unable to get user profile. Database not found")
+    );
 });
 
 app.put("/image", (request, response) => {
@@ -126,8 +135,16 @@ app.put("/image", (request, response) => {
     .where("id", "=", id)
     .increment("entries", 1)
     .returning("entries")
-    .then(entries => response.json(entries[0]))
-    .catch(err => response.status(400).json("Unable to get entries"));
+    .then(entries => {
+      if (entries.length) {
+        response.json(entries[0]);
+      } else {
+        response.status(400).json("User not found");
+      }
+    })
+    .catch(err =>
+      response.status(400).json("Unable to get entries. Database not found")
+    );
 });
 
 app.listen(3000, () => {
