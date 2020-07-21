@@ -1,5 +1,5 @@
 import express from "express";
-import bcryptjs from "bcryptjs";
+import bcrypt from "bcryptjs";
 import cors from "cors";
 import knex from "knex";
 
@@ -50,19 +50,32 @@ app.get("/", (request, response) => {
 });
 
 app.post("/signin", (request, response) => {
-  if (
-    request.body.email === database.users[0].email &&
-    request.body.password === database.users[0].password
-  ) {
-    response.json(database.users[0]);
-  } else {
-    response.status("404").json("Error logging in");
-  }
+  db.select("email", "password")
+    .from("login")
+    .where("email", "=", request.body.email)
+    .then(data => {
+      const isValid = bcrypt.compareSync(
+        request.body.password,
+        data[0].password
+      );
+
+      if (isValid) {
+        return db
+          .select("*")
+          .from("users")
+          .where("email", "=", request.body.email)
+          .then(user => {
+            response.json(user[0]);
+          })
+          .catch(err => response.status(400).json("Database not found"));
+      }
+    })
+    .catch(err => response.status(400).json("Wrong credentials"));
 });
 
 app.post("/register", (request, response) => {
   const { name, email, password } = request.body;
-  const hashedPassword = bcryptjs.hashSync(password);
+  const hashedPassword = bcrypt.hashSync(password);
 
   db.transaction(trx => {
     trx
