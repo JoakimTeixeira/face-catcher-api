@@ -30,21 +30,10 @@ app.get("/", (request, response) => {
     });
 });
 
-app.post("/signin", (request, response) =>
-  handleSignin(request, response, database, bcrypt)
-);
-
-app.post("/register", (request, response) =>
-  handleRegister(request, response, database, bcrypt)
-);
-
-app.get("/profile/:id", (request, response) =>
-  handleProfile(request, response, database)
-);
-
-app.put("/image", (request, response) =>
-  handleImage(request, response, database)
-);
+app.post("/signin", handleSignin(database, bcrypt));
+app.post("/register", handleRegister(database, bcrypt));
+app.get("/profile/:id", handleProfile(database));
+app.put("/image", handleImage(database));
 
 app.listen(3000, () => {
   console.log("app is running on port 3000");

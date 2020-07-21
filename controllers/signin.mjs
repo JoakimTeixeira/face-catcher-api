@@ -1,4 +1,4 @@
-const handleSignin = (request, response, database, bcrypt) => {
+const handleSignin = (database, bcrypt) => (request, response) => {
   database
     .select("email", "password")
     .from("login")

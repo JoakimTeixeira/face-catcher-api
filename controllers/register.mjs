@@ -1,4 +1,4 @@
-const handleRegister = (request, response, database, bcrypt) => {
+const handleRegister = (database, bcrypt) => (request, response) => {
   const { name, email, password } = request.body;
   const hashedPassword = bcrypt.hashSync(password);
 

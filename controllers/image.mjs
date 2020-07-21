@@ -1,4 +1,4 @@
-const handleImage = (request, response, database) => {
+const handleImage = database => (request, response) => {
   const { id } = request.body;
   database("users")
     .where("id", "=", id)

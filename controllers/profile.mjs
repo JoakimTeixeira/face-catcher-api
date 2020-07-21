@@ -1,4 +1,4 @@
-const handleProfile = (request, response, database) => {
+const handleProfile = database => (request, response) => {
   const { id } = request.params;
 
   database
