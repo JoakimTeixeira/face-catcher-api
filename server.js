@@ -2,6 +2,10 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import knex from "knex";
+import { handleRegister } from "./controllers/register.mjs";
+import { handleSignin } from "./controllers/signin.mjs";
+import { handleProfile } from "./controllers/profile.mjs";
+import { handleImage } from "./controllers/image.mjs";
 
 const database = knex({
   client: "pg",
@@ -26,107 +30,21 @@ app.get("/", (request, response) => {
     });
 });
 
-app.post("/signin", (request, response) => {
-  database
-    .select("email", "password")
-    .from("login")
-    .where("email", "=", request.body.email)
-    .then(data => {
-      const isValid = bcrypt.compareSync(
-        request.body.password,
-        data[0].password
-      );
+app.post("/signin", (request, response) =>
+  handleSignin(request, response, database, bcrypt)
+);
 
-      if (isValid) {
-        return database
-          .select("*")
-          .from("users")
-          .where("email", "=", request.body.email)
-          .then(user => {
-            response.json(user[0]);
-          })
-          .catch(err =>
-            response
-              .status(400)
-              .json("Unable to get user signin data. Database not found")
-          );
-      }
-    })
-    .catch(err => response.status(400).json("Wrong credentials"));
-});
+app.post("/register", (request, response) =>
+  handleRegister(request, response, database, bcrypt)
+);
 
-app.post("/register", (request, response) => {
-  const { name, email, password } = request.body;
-  const hashedPassword = bcrypt.hashSync(password);
+app.get("/profile/:id", (request, response) =>
+  handleProfile(request, response, database)
+);
 
-  database
-    .transaction(trx => {
-      trx
-        .insert({
-          password: hashedPassword,
-          email,
-        })
-        .into("login")
-        .returning("email")
-        .then(loginEmail => {
-          return trx("users")
-            .returning("*")
-            .insert({
-              email: loginEmail[0],
-              name,
-              joined: new Date(),
-            })
-            .then(user => {
-              // returns the last registered user
-              response.json(user[0]);
-            });
-        })
-        .then(trx.commit)
-        .catch(trx.rollback);
-    })
-    .catch(err =>
-      response.status(400).json(`Unable to register. ${err.detail}`)
-    );
-});
-
-app.get("/profile/:id", (request, response) => {
-  const { id } = request.params;
-
-  database
-    .select("*")
-    .from("users")
-    .where({ id })
-    .then(user => {
-      if (user.length) {
-        response.json(user[0]);
-      } else {
-        response.status(400).json("User not found");
-      }
-    })
-    .catch(err =>
-      response
-        .status(400)
-        .json("Unable to get user profile. Database not found")
-    );
-});
-
-app.put("/image", (request, response) => {
-  const { id } = request.body;
-  database("users")
-    .where("id", "=", id)
-    .increment("entries", 1)
-    .returning("entries")
-    .then(entries => {
-      if (entries.length) {
-        response.json(entries[0]);
-      } else {
-        response.status(400).json("User not found");
-      }
-    })
-    .catch(err =>
-      response.status(400).json("Unable to get entries. Database not found")
-    );
-});
+app.put("/image", (request, response) =>
+  handleImage(request, response, database)
+);
 
 app.listen(3000, () => {
   console.log("app is running on port 3000");
