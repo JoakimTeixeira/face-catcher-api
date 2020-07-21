@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import cors from "cors";
 import knex from "knex";
 
-const db = knex({
+const database = knex({
   client: "pg",
   connection: {
     host: "127.0.0.1",
@@ -13,44 +13,22 @@ const db = knex({
   },
 });
 
-// database test
-db.select("*")
-  .from("users")
-  .then(data => {
-    console.log(data);
-  });
-
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const database = {
-  users: [
-    {
-      id: "123",
-      name: "John",
-      email: "john@email.com",
-      password: "cookies",
-      entries: 0,
-      joined: new Date(),
-    },
-    {
-      id: "124",
-      name: "Sally",
-      email: "sally@email.com",
-      password: "apple",
-      entries: 0,
-      joined: new Date(),
-    },
-  ],
-};
-
 app.get("/", (request, response) => {
-  response.send(database.users);
+  database
+    .select("*")
+    .from("users")
+    .then(users => {
+      response.send(users);
+    });
 });
 
 app.post("/signin", (request, response) => {
-  db.select("email", "password")
+  database
+    .select("email", "password")
     .from("login")
     .where("email", "=", request.body.email)
     .then(data => {
@@ -60,7 +38,7 @@ app.post("/signin", (request, response) => {
       );
 
       if (isValid) {
-        return db
+        return database
           .select("*")
           .from("users")
           .where("email", "=", request.body.email)
@@ -81,38 +59,41 @@ app.post("/register", (request, response) => {
   const { name, email, password } = request.body;
   const hashedPassword = bcrypt.hashSync(password);
 
-  db.transaction(trx => {
-    trx
-      .insert({
-        password: hashedPassword,
-        email,
-      })
-      .into("login")
-      .returning("email")
-      .then(loginEmail => {
-        return trx("users")
-          .returning("*")
-          .insert({
-            email: loginEmail[0],
-            name,
-            joined: new Date(),
-          })
-          .then(user => {
-            // returns the last registered user
-            response.json(user[0]);
-          });
-      })
-      .then(trx.commit)
-      .catch(trx.rollback);
-  }).catch(err =>
-    response.status(400).json(`Unable to register. ${err.detail}`)
-  );
+  database
+    .transaction(trx => {
+      trx
+        .insert({
+          password: hashedPassword,
+          email,
+        })
+        .into("login")
+        .returning("email")
+        .then(loginEmail => {
+          return trx("users")
+            .returning("*")
+            .insert({
+              email: loginEmail[0],
+              name,
+              joined: new Date(),
+            })
+            .then(user => {
+              // returns the last registered user
+              response.json(user[0]);
+            });
+        })
+        .then(trx.commit)
+        .catch(trx.rollback);
+    })
+    .catch(err =>
+      response.status(400).json(`Unable to register. ${err.detail}`)
+    );
 });
 
 app.get("/profile/:id", (request, response) => {
   const { id } = request.params;
 
-  db.select("*")
+  database
+    .select("*")
     .from("users")
     .where({ id })
     .then(user => {
@@ -131,7 +112,7 @@ app.get("/profile/:id", (request, response) => {
 
 app.put("/image", (request, response) => {
   const { id } = request.body;
-  db("users")
+  database("users")
     .where("id", "=", id)
     .increment("entries", 1)
     .returning("entries")
