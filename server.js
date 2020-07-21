@@ -95,20 +95,12 @@ app.get("/profile/:id", (request, response) => {
 
 app.put("/image", (request, response) => {
   const { id } = request.body;
-  let found = false;
-
-  database.users.forEach(user => {
-    if (user.id === id) {
-      found = true;
-      user.entries++;
-
-      return response.json(user.entries);
-    }
-  });
-
-  if (!found) {
-    response.status(400).json("User not found");
-  }
+  db("users")
+    .where("id", "=", id)
+    .increment("entries", 1)
+    .returning("entries")
+    .then(entries => response.json(entries[0]))
+    .catch(err => response.status(400).json("Unable to get entries"));
 });
 
 app.listen(3000, () => {
