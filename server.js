@@ -1,4 +1,5 @@
 import express from "express";
+import bcryptjs from "bcryptjs";
 import cors from "cors";
 import knex from "knex";
 
@@ -60,22 +61,35 @@ app.post("/signin", (request, response) => {
 });
 
 app.post("/register", (request, response) => {
-  const { name, email } = request.body;
+  const { name, email, password } = request.body;
+  const hashedPassword = bcryptjs.hashSync(password);
 
-  db("users")
-    .returning("*")
-    .insert({
-      email,
-      name,
-      joined: new Date(),
-    })
-    .then(user => {
-      // returns the last registered user
-      response.json(user[0]);
-    })
-    .catch(err =>
-      response.status(400).json(`Unable to register. ${err.detail}`)
-    );
+  db.transaction(trx => {
+    trx
+      .insert({
+        password: hashedPassword,
+        email,
+      })
+      .into("login")
+      .returning("email")
+      .then(loginEmail => {
+        return trx("users")
+          .returning("*")
+          .insert({
+            email: loginEmail[0],
+            name,
+            joined: new Date(),
+          })
+          .then(user => {
+            // returns the last registered user
+            response.json(user[0]);
+          });
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+  }).catch(err =>
+    response.status(400).json(`Unable to register. ${err.detail}`)
+  );
 });
 
 app.get("/profile/:id", (request, response) => {
