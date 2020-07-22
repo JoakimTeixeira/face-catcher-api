@@ -1,3 +1,16 @@
+import Clarifai from "clarifai";
+
+const app = new Clarifai.App({
+  apiKey: "your-clarifai-api-key-here",
+});
+
+const handleApiCall = () => (request, response) => {
+  app.models
+    .predict(Clarifai.FACE_DETECT_MODEL, request.body.input)
+    .then(data => response.json(data))
+    .catch(err => response.status(400).json("Could not connect to API"));
+};
+
 const handleImage = database => (request, response) => {
   const { id } = request.body;
   database("users")
@@ -16,4 +29,4 @@ const handleImage = database => (request, response) => {
     );
 };
 
-export { handleImage };
+export { handleApiCall, handleImage };

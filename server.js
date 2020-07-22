@@ -5,7 +5,7 @@ import knex from "knex";
 import { handleRegister } from "./controllers/register.mjs";
 import { handleSignin } from "./controllers/signin.mjs";
 import { handleProfile } from "./controllers/profile.mjs";
-import { handleImage } from "./controllers/image.mjs";
+import { handleApiCall, handleImage } from "./controllers/image.mjs";
 
 const database = knex({
   client: "pg",
@@ -34,6 +34,7 @@ app.post("/signin", handleSignin(database, bcrypt));
 app.post("/register", handleRegister(database, bcrypt));
 app.get("/profile/:id", handleProfile(database));
 app.put("/image", handleImage(database));
+app.post("/imageUrl", handleApiCall());
 
 app.listen(3000, () => {
   console.log("app is running on port 3000");
