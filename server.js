@@ -10,10 +10,10 @@ import { handleApiCall, handleImage } from "./controllers/image.mjs";
 const database = knex({
   client: "pg",
   connection: {
-    host: "127.0.0.1",
-    user: "joka",
-    password: "root",
-    database: "face-catcher",
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   },
 });
 
@@ -36,6 +36,6 @@ app.get("/profile/:id", handleProfile(database));
 app.put("/image", handleImage(database));
 app.post("/imageUrl", handleApiCall());
 
-app.listen(3000, () => {
-  console.log("app is running on port 3000");
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`app is running on port ${process.env.PORT}`);
 });
